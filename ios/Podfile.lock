@@ -1,0 +1,36 @@
+PODS:
+  - Flutter (1.0.0)
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - yandex_maps_mapkit_lite (1.0.0):
+    - Flutter
+    - YandexMapsMobile (= 4.11.0-beta-lite-flutter)
+  - YandexMapsMobile (4.11.0-beta-lite-flutter)
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - yandex_maps_mapkit_lite (from `.symlinks/plugins/yandex_maps_mapkit_lite/ios`)
+
+SPEC REPOS:
+  trunk:
+    - YandexMapsMobile
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  yandex_maps_mapkit_lite:
+    :path: ".symlinks/plugins/yandex_maps_mapkit_lite/ios"
+
+SPEC CHECKSUMS:
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
+  yandex_maps_mapkit_lite: 37d24cc9972dd092bb74bc1d65e89fbef1ebf9b0
+  YandexMapsMobile: 8125c330bef4e951ac548010e88026f9ad1dfc72
+
+PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
+
+COCOAPODS: 1.16.2
