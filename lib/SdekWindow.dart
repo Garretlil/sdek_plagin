@@ -5,7 +5,6 @@ import 'package:yandex_maps_mapkit_lite/yandex_map.dart';
 
 class SdekWindow extends StatefulWidget {
   const SdekWindow({super.key});
-
   @override
   State<SdekWindow> createState() => _SdekWindowState();
 }
@@ -26,7 +25,7 @@ class _SdekWindowState extends State<SdekWindow> {
                 ),
               ),
               Positioned(
-                bottom: 400,
+                bottom: 330,
                 right: 10,
                 child: Column(
                   children: [
@@ -50,11 +49,11 @@ class _SdekWindowState extends State<SdekWindow> {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.orange,
+          color: Colors.white,
           shape: BoxShape.circle,
           boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
         ),
-        child: Icon(icon, size: 30, color: Colors.white
+        child: Icon(icon, size: 30, color: Colors.black
         ),
       ),
     );
