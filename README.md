@@ -1,6 +1,6 @@
 # sdek_plagin
 
-A new Flutter project.
+Integration Plugin for SDEK on Flutter
 
 ## Getting Started
 
