@@ -34,17 +34,18 @@ class AnyScreen extends StatefulWidget {
 }
 
 class _AnyScreenState extends State<AnyScreen> {
+
   void _showBottomSheet() {
     showModalBottomSheet(
       enableDrag: false,
       isScrollControlled: true,
       context: context,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30),bottom: Radius.circular(30)),
       ),
       builder: (context) {
         return ClipRRect(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30),bottom: Radius.circular(30)),
           child: DraggableScrollableSheet(
             expand: false,
             initialChildSize: 0.9,
@@ -95,7 +96,6 @@ class _AnyScreenState extends State<AnyScreen> {
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
