@@ -15,10 +15,14 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.2
   geolocator: ^13.0.2
+  retrofit: ^4.4.0
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  retrofit_generator: ^9.0.0
+  json_serializable: ^6.8.0
 
   flutter_lints: ^5.0.0
 

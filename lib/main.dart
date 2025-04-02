@@ -76,8 +76,8 @@ class _AnyScreenState extends State<AnyScreen> {
                     width: 350,
                     height: 80,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      color: Colors.white
+                        borderRadius: BorderRadius.circular(30),
+                        color: Colors.white
                     ),
                     child: Column(
                       children: [
@@ -100,29 +100,28 @@ class _AnyScreenState extends State<AnyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child:GestureDetector(
-         onTap: _showBottomSheet,
-         child: Container(
-          height: 50,
-          width: 260,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(20)),
-              color: Colors.white),
-          child: Center(child: Row(
-            children: [
-              SizedBox(width: 10,),
-              Text('Выбрать пункт выдачи'),
-              SizedBox(width: 10,),
-              img.Image.asset('assets/sdek.png',width: 60,),
-            ],
+        backgroundColor: Colors.white,
+        body: Center(
+          child:GestureDetector(
+              onTap: _showBottomSheet,
+              child: Container(
+                  height: 50,
+                  width: 260,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      color: Colors.white),
+                  child: Center(child: Row(
+                    children: [
+                      SizedBox(width: 10,),
+                      Text('Выбрать пункт выдачи'),
+                      SizedBox(width: 10,),
+                      img.Image.asset('assets/sdek.png',width: 60,),
+                    ],
+                  ),
+                  )
+              )
           ),
-          )
         )
-      ),
-      )
     );
   }
 }
-const Color back3=Color(0xC01E1A1A);
