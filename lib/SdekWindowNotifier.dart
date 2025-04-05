@@ -12,12 +12,14 @@ class PointPlaceMark{
   final double longitude;
   final String description;
   final String adress;
+  final String type;
 
   PointPlaceMark({
     required this.latitude,
     required this.longitude,
     required this.description,
-    required this.adress
+    required this.adress,
+    required this.type
   });
 
 }
@@ -29,7 +31,12 @@ class SdekWindowNotifier extends ChangeNotifier {
   List<DeliveryPoint> points = [];
   List<PointPlaceMark> placemarks = [];
   mapkit.ClusterizedPlacemarkCollection? clusterizedCollection;
-
+  final postamatIcon = mapkitImage.ImageProvider.fromImageProvider(
+    const AssetImage("assets/postamat.png"),
+  );
+  final pvzIcon = mapkitImage.ImageProvider.fromImageProvider(
+    const AssetImage("assets/pvz.png"),
+  );
   SdekWindowNotifier() {
     auth = CdekAuth(clientId: clientId, clientSecret: clientSecret);
     api = CdekApi(auth);
@@ -49,41 +56,37 @@ class SdekWindowNotifier extends ChangeNotifier {
         longitude: point.longitude,
         description: point.name,
         adress: point.address,
+        type:point.type
       )).toList();
+      print(points.length);
+
     } catch (e) {
       print('Ошибка загрузки пвз: $e');
     }
+  }
+  void _clusterizePoints(){
+    clusterizedCollection = mapWindow?.map.mapObjects.addClusterizedPlacemarkCollection(
+      ClusterListenerImpl(),
+    );
+    for (var placemark in placemarks) {
+        clusterizedCollection!.addPlacemark()
+          ..geometry = mapkit.Point(
+            latitude: placemark.latitude,
+            longitude: placemark.longitude,
+          )
+          ..setIcon(placemark.type== 'PVZ' ? pvzIcon : postamatIcon)
+          ..setIconStyle(mapkit.IconStyle(scale: placemark.type== 'PVZ' ? 1 : 1));
+    }
+    clusterizedCollection!.clusterPlacemarks(clusterRadius: 50.0, minZoom: 50);
   }
 
   Future<void> onMapCreated(mapkit.MapWindow mapWindow) async {
     await _loadPoints();
     this.mapWindow = mapWindow;
-    zoom = mapWindow.map.cameraPosition.zoom + 8;
-
-    final clusterIcon = mapkitImage.ImageProvider.fromImageProvider(
-      const AssetImage("assets/sdek_icon.png"),
-    );
-
-    clusterizedCollection = mapWindow.map.mapObjects.addClusterizedPlacemarkCollection(
-      ClusterListenerImpl(),
-    );
-
-    final icon = mapkitImage.ImageProvider.fromImageProvider(
-      const AssetImage("assets/sdek_icon.png"),
-    );
-
-    for (var placemark in placemarks) {
-      clusterizedCollection!.addPlacemark()
-        ..geometry = mapkit.Point(
-          latitude: placemark.latitude,
-          longitude: placemark.longitude,
-        )
-        ..setIcon(icon);
-    }
-
-    clusterizedCollection!.clusterPlacemarks(clusterRadius: 60.0, minZoom: 5);
-
+    zoom = mapWindow.map.cameraPosition.zoom;
+    _clusterizePoints();
     print("Кластеры добавлены");
+
     notifyListeners();
   }
 
@@ -92,7 +95,7 @@ class SdekWindowNotifier extends ChangeNotifier {
   }
 
   void changeZoom(bool increase) async {
-    double newZoom = (zoom! + (increase ? 0.7 : -0.7)).clamp(
+    double newZoom = (zoom! + (increase ? 1 : -1)).clamp(
       mapWindow!.map.cameraBounds.getMinZoom(),
       mapWindow!.map.cameraBounds.getMaxZoom(),
     );
@@ -116,6 +119,7 @@ class SdekWindowNotifier extends ChangeNotifier {
       ),
     );
     zoom = newZoom;
+    _clusterizePoints();
     notifyListeners();
   }
 }
@@ -128,7 +132,6 @@ class ClusterListenerImpl implements mapkit.ClusterListener {
     final clusterIcon = mapkitImage.ImageProvider.fromImageProvider(
       MemoryImage(iconBytes),
     );
-
     cluster.appearance.setIcon(clusterIcon);
   }
 }
@@ -141,5 +144,3 @@ class ClusterTapListenerImpl implements mapkit.ClusterTapListener {
     return true;
   }
 }
-
-

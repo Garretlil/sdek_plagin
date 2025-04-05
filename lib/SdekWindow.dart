@@ -5,6 +5,7 @@ import 'package:yandex_maps_mapkit_lite/yandex_map.dart';
 
 class SdekWindow extends StatefulWidget {
   const SdekWindow({super.key});
+
   @override
   State<SdekWindow> createState() => _SdekWindowState();
 }

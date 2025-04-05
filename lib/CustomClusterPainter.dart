@@ -36,8 +36,6 @@ Canvas _paintCirclePlacemark({
   required PictureRecorder recorder,
 }) {
   final canvas = Canvas(recorder);
-
-
   final radius = size.height / 2.15;
 
   final fillPaint = Paint()

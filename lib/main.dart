@@ -70,24 +70,6 @@ class _AnyScreenState extends State<AnyScreen> {
                   Expanded(
                     child: SdekWindow(),
                   ),
-                  SizedBox(height: 10,),
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    width: 350,
-                    height: 80,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        color: Colors.white
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Дополнительный контент',
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 10,)
                 ],
               );
             },

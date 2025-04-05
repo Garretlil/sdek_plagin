@@ -40,8 +40,10 @@ class DeliveryPoint {
   final String workTime;
   final double longitude;
   final double latitude;
+  final String type;
   final List<String> phones;
   final List<String> images;
+
 
   DeliveryPoint({
     required this.code,
@@ -51,8 +53,10 @@ class DeliveryPoint {
     required this.workTime,
     required this.longitude,
     required this.latitude,
+    required this.type,
     required this.phones,
     required this.images,
+
   });
 
   factory DeliveryPoint.fromJson(Map<String, dynamic> json) {
@@ -64,6 +68,7 @@ class DeliveryPoint {
       workTime: json['work_time'] ?? 'Режим работы не указан',
       latitude: (json['location']?['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['location']?['longitude'] as num?)?.toDouble() ?? 0.0,
+      type: json['type'] ?? 'Тип пвз не указан',
       phones: (json['phones'] as List<dynamic>?)
           ?.map((p) => p['number'].toString())
           .toList() ?? [],
