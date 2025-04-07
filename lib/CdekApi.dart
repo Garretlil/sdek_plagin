@@ -19,7 +19,7 @@ class CdekApi {
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
     //print(response.data);
-
+    int k=5;
     if (response.statusCode == 200) {
       print('Data loaded');
       if (response.data is! List) {
