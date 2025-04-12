@@ -1,6 +1,8 @@
 # sdek_plagin
 
 Integration Plugin for SDEK on Flutter
+![Simulator Screenshot - iPhone 16 - 2025-04-12 at 07 58 18](https://github.com/user-attachments/assets/9c1e3e0b-15d1-41fd-9c05-1af465a9255c)
+
 
 ## Getting Started
 
