@@ -1,24 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sdek_plagin/MetroStation.dart';
 import 'package:sdek_plagin/SdekWindowNotifier.dart';
-import 'package:yandex_maps_mapkit_lite/yandex_map.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart';
 
-class SdekWindow extends StatefulWidget {
-  const SdekWindow({super.key});
+class CDEKWindow extends StatefulWidget {
+  const CDEKWindow({super.key});
 
   @override
-  State<SdekWindow> createState() => _SdekWindowState();
+  State<CDEKWindow> createState() => _CDEKWindowState();
 }
 
-class _SdekWindowState extends State<SdekWindow> {
+class _CDEKWindowState extends State<CDEKWindow> {
+  late final YandexMapController _mapController;
+  var _mapZoom = 0.0;
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => SdekWindowNotifier(),
-      child: Consumer<SdekWindowNotifier>(
-        builder: (context, sdekWindow, child) {
-          sdekWindow.onPlacemarkTap = (pointData) {
-            _showBottomSheet(pointData);
+      create: (context) => CDEKWindowNotifier(),
+      child: Consumer<CDEKWindowNotifier>(
+        builder: (context, CDEKWindow, child) {
+          CDEKWindow.onPlacemarkTap = (pointData) {
+            _showBottomSheet(pointData,CDEKWindow.stations);
           };
           return Scaffold(
             backgroundColor: Colors.white,
@@ -27,19 +37,16 @@ class _SdekWindowState extends State<SdekWindow> {
                 Positioned.fill(
                   child: YandexMap(
                     onMapCreated: (mapWindow) {
-                      sdekWindow.onMapCreated(mapWindow);
+                      CDEKWindow.onMapCreated(mapWindow);
                     },
-                  ),
-                ),
-                Positioned(
-                  bottom: 330,
-                  right: 10,
-                  child: Column(
-                    children: [
-                      _buildButton(Icons.add, () => sdekWindow.changeZoom(true)),
-                      SizedBox(height: 15),
-                      _buildButton(Icons.remove, () => sdekWindow.changeZoom(false)),
-                    ],
+                    onCameraPositionChanged: (cameraPosition, _, __) {
+                      setState(() {
+                        _mapZoom = cameraPosition.zoom;
+                      });
+                    },
+                    mapObjects: CDEKWindow.clusterizedCollection != null
+                        ? [CDEKWindow.clusterizedCollection!]
+                        : [],
                   ),
                 ),
               ],
@@ -50,8 +57,9 @@ class _SdekWindowState extends State<SdekWindow> {
     );
   }
   void temp(){}
-  void _showBottomSheet(PointPlaceMark pointData) {
+  void _showBottomSheet(PointPlaceMark pointData, List<MetroStation>? stations) {
     final text=split(pointData.description);
+    final targetStations= getMatchingStations(stations!,pointData.metro);
     showModalBottomSheet(
       enableDrag: false,
       isScrollControlled: true,
@@ -64,7 +72,7 @@ class _SdekWindowState extends State<SdekWindow> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(30),bottom: Radius.circular(30)),
           child: DraggableScrollableSheet(
             expand: false,
-            initialChildSize: 0.7,
+            initialChildSize: 0.5,
             minChildSize: 0.5,
             maxChildSize: 1.0,
             builder: (context, scrollController) {
@@ -83,39 +91,44 @@ class _SdekWindowState extends State<SdekWindow> {
                       ),
                     ),
                   ),
-                  Text('Пункт СДЭК ${text[0]}'),
+                  Text('Пункт СДЭК'),
                   Text(text[1],style: TextStyle(fontWeight: FontWeight.w800 ),),
                   SizedBox(height: 10,),
                   Padding(
-                    padding: EdgeInsets.only(left: 10),
-                    child:
-                    Column(children: [
-                      Row(children:
+                      padding: EdgeInsets.only(left: 10),
+                      child:
+                      Column(children: [
+                        Row(
+                          children: [
+                            Icon(Icons.language, color: Colors.green),
+                            SizedBox(width: 10),
+                            Text(pointData.metro),
+                            SizedBox(width: 5),
+                            for (var station in targetStations)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 4.0),
+                                child: Icon(Icons.circle, size: 10, color: station.color),
+                              ),
+                          ],
+                        ),
+                        SizedBox(height: 10,),
+                        Row(children:
                         [
-                          Icon(Icons.language,color: Colors.green,),
+                          Icon(Icons.access_time_outlined,color: Colors.green,),
                           SizedBox(width: 10,),
-                          Text('ст. м.${pointData.metro}'),
-                          SizedBox(width: 5,),
-                          Icon(Icons.circle,size: 10,color: Colors.orange,),
+                          Text(pointData.workTime),
                         ],
-                      ),
-                      SizedBox(height: 10,),
-                      Row(children:
-                      [
-                        Icon(Icons.check_box_outline_blank,color: Colors.green,),
-                        SizedBox(width: 10,),
-                        Text('Вес: до 100 кг')
-                      ],
-                      ),
-                   ]
-                  )
-                 ),
+                        ),
+                      ]
+                      )
+                  ),
+                  SizedBox(height: 50,),
                   GestureDetector(
                     onTap: ()=>temp(),
                     child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(15)),
-                        color: Colors.green
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
+                          color: Colors.green
                       ),
                       width: 200,
                       height: 90,
@@ -129,7 +142,7 @@ class _SdekWindowState extends State<SdekWindow> {
                       ),
                     ),
                   )
-               ],
+                ],
               );
             },
           ),

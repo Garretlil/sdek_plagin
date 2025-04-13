@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class MetroStation {
   final String name;
@@ -10,18 +12,51 @@ class MetroStation {
     required this.line,
     required this.color,
   });
+
+  factory MetroStation.fromJson(Map<String, dynamic> json, String lineName, String hexColor) {
+    return MetroStation(
+      name: json['name'],
+      line: lineName,
+      color: _hexToColor(hexColor),
+    );
+  }
+
+
+  static Color _hexToColor(String hex) {
+    hex = hex.replaceAll("#", "");
+    if (hex.length == 6) hex = "FF$hex"; // add alpha
+    return Color(int.parse(hex, radix: 16));
+  }
 }
-const List<MetroStation> allStations = [
-  MetroStation(name: "Киевская", line: "Арбатско-Покровская", color: Colors.blue),
-  MetroStation(name: "Киевская", line: "Кольцевая", color: Colors.brown),
-  MetroStation(name: "Киевская", line: "Филёвская", color: Colors.lightBlueAccent),
-  MetroStation(name: "Окружная", line: "МЦК", color: Color(0xFFB1B1B1)),
-  MetroStation(name: "Окружная", line: "МЦД-1", color: Color(0xFF7D3C98)),
-];
-MetroStation? getStationByName(String name) {
-  return allStations.firstWhere(
-        (station) => station.name == name,
-  );
+Future<List<MetroStation>> fetchMetroStations() async {
+  final response = await http.get(Uri.parse('https://api.hh.ru/metro/1'));
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    List<MetroStation> stations = [];
+
+    for (final line in data['lines']) {
+      final String lineName = line['name'];
+      final String hexColor = line['hex_color'];
+      for (final station in line['stations']) {
+        stations.add(MetroStation.fromJson(station, lineName, hexColor));
+      }
+    }
+    return stations;
+  } else {
+    throw Exception('Failed to load metro stations');
+  }
+}
+
+List<MetroStation> getMatchingStations(List<MetroStation> stationsList, String targetStation){
+  List<MetroStation> outputStations=[];
+  for (var station in stationsList){
+    if (station.name==targetStation){
+      outputStations.add(station);
+    }
+  }
+  return outputStations;
+
 }
 
 

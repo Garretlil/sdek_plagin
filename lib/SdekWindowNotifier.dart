@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:yandex_maps_mapkit_lite/image.dart' as mapkitImage;
-import 'package:yandex_maps_mapkit_lite/mapkit.dart' as mapkit;
+import 'package:sdek_plagin/MetroStation.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart';
 import 'CdekApi.dart';
 import 'CdekAuth.dart';
 import 'CustomClusterPainter.dart';
@@ -14,6 +14,7 @@ class PointPlaceMark{
   final String adress;
   final String type;
   final String metro;
+  final String workTime;
 
   PointPlaceMark({
     required this.latitude,
@@ -21,168 +22,118 @@ class PointPlaceMark{
     required this.description,
     required this.adress,
     required this.type,
-    required this.metro
+    required this.metro,
+    required this.workTime
   });
 }
-class SdekWindowNotifier extends ChangeNotifier {
+class CDEKWindowNotifier extends ChangeNotifier {
   static const clientId = 'NYnDZhNexvHneGnk29cdGpZuAxwFot6J';
   static const clientSecret = 'RglJK9tAYIUUhP2Dt3NuBChjm7iESwkf';
+
   late final CdekAuth auth;
   late final CdekApi api;
-  List<DeliveryPoint> points = [];
-  List<PointPlaceMark> placemarks = [];
-  mapkit.ClusterizedPlacemarkCollection? clusterizedCollection;
-  mapkit.ClusterizedPlacemarkCollection? clusterizedPlacemarkCollection;
-  void Function(PointPlaceMark)? onPlacemarkTap;
-  final postamatIcon = mapkitImage.ImageProvider.fromImageProvider(
-    const AssetImage("assets/postamat.png"),
-  );
-  final pvzIcon = mapkitImage.ImageProvider.fromImageProvider(
-    const AssetImage("assets/pvz.png"),
-  );
+  List<MetroStation>? stations;
 
-  SdekWindowNotifier() {
+
+  List<DeliveryPoint> points = [];
+  List<PlacemarkMapObject> placemarks = [];
+
+  ClusterizedPlacemarkCollection? clusterizedCollection;
+  void Function(PointPlaceMark)? onPlacemarkTap;
+
+  CDEKWindowNotifier() {
     auth = CdekAuth(clientId: clientId, clientSecret: clientSecret);
     api = CdekApi(auth);
+    stations=[];
   }
 
   late final GeoLocator geoLocator;
-  mapkit.MapWindow? mapWindow;
+  YandexMapController? controller;
   double? zoom;
-  mapkit.Point currentPosition = const mapkit.Point(latitude: 55.7522, longitude: 37.6156);
-  final cameraCallback = mapkit.MapCameraCallback(onMoveFinished: (isFinished) {});
+  Point currentPosition = const Point(latitude: 55.7522, longitude: 37.6156);
 
   Future<void> _loadPoints() async {
     try {
       points = await api.fetchDeliveryPoints();
-      placemarks = points.map((point) => PointPlaceMark(
-        latitude: point.latitude,
-        longitude: point.longitude,
-        description: point.name,
-        adress: point.address,
-        type:point.type,
-        metro: point.nearestMetro,
-      )).toList();
-      print(points.length);
 
+      placemarks = points.map((point) {
+        return PlacemarkMapObject(
+          mapId: MapObjectId('MapObject_${point.latitude}_${point.longitude}'),
+          point: Point(latitude: point.latitude, longitude: point.longitude),
+          opacity: 1,
+          icon: PlacemarkIcon.single(
+            PlacemarkIconStyle(
+              image: BitmapDescriptor.fromAssetImage('assets/pvz.png'),
+              scale: 1,
+            ),
+          ),
+          onTap: (_, __) {
+            final pointData = PointPlaceMark(
+              latitude: point.latitude,
+              longitude: point.longitude,
+              description: point.name,
+              adress: point.address,
+              type: point.type,
+              metro: point.nearestMetro ?? '',
+              workTime: point.workTime
+            );
+            onPlacemarkTap?.call(pointData);
+          },
+        );
+      }).toList();
+
+      print(points.length);
+      notifyListeners();
     } catch (e) {
-      print('Ошибка загрузки пвз: $e');
+      print('Ошибка загрузки ПВЗ: $e');
     }
   }
   void _clusterizePoints() {
 
-    clusterizedCollection = mapWindow!.map.mapObjects.addClusterizedPlacemarkCollection(
-      ClusterListenerImpl(),
-    );
-
-    clusterizedCollection!.addTapListener(
-      MapObjectTapListenerImpl(onPlacemarkTap: onPlacemarkTap),
-    );
-
-    for (var placemarkData in placemarks) {
-      final placemark = clusterizedCollection!.addPlacemark()
-        ..geometry = mapkit.Point(
-          latitude: placemarkData.latitude,
-          longitude: placemarkData.longitude,
-        )
-        ..setIcon(placemarkData.type == 'PVZ' ? pvzIcon : postamatIcon)
-        ..setIconStyle(mapkit.IconStyle(scale: 0.8))
-        ..userData = placemarkData;
-      //placemark.addTapListener(MapObjectTapListenerImpl());
-    }
-
-    clusterizedCollection!.clusterPlacemarks(clusterRadius: 50.0, minZoom: 50);
+    clusterizedCollection=ClusterizedPlacemarkCollection(
+        mapId: const MapObjectId('0'),
+        placemarks: placemarks,
+        radius: 50,
+        minZoom: 50,
+        onClusterAdded: (self, cluster) async {
+          return cluster.copyWith(
+            appearance: cluster.appearance.copyWith(
+              opacity: 1.0,
+              icon: PlacemarkIcon.single(
+                PlacemarkIconStyle(
+                  image: BitmapDescriptor.fromBytes(
+                    await ClusterIconPainter(cluster.size)
+                        .getClusterIconBytes(),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+        onClusterTap: (self, cluster) async {
+          await controller?.moveCamera(
+            animation: const MapAnimation(
+                type: MapAnimationType.linear, duration: 0.3),
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: cluster.placemarks.first.point,
+                zoom: zoom! + 1,
+              ),
+            ),
+          );
+        });
     print('new cluster');
+    notifyListeners();
   }
 
-
-  Future<void> onMapCreated(mapkit.MapWindow mapWindow) async {
+  Future<void> onMapCreated(YandexMapController controller) async {
+    this.controller = controller;
     await _loadPoints();
-    this.mapWindow = mapWindow;
-    //zoom = mapWindow.map.cameraPosition.zoom;
-    zoom=10;
-    mapWindow.map.move(
-      mapkit.CameraPosition(
-        currentPosition,
-        zoom: 10,
-        azimuth: 0.0,
-        tilt: 0.0,
-      ),
-    );
+    zoom = 10;
     _clusterizePoints();
     print("Кластеры добавлены");
-
-    notifyListeners();
-  }
-
-  void setMapWindow(mapkit.MapWindow window) {
-    currentPosition = mapWindow!.map.cameraPosition.target;
-  }
-
-  void changeZoom(bool increase) async {
-    double newZoom = (zoom! + (increase ? 1 : -1)).clamp(
-      mapWindow!.map.cameraBounds.getMinZoom(),
-      mapWindow!.map.cameraBounds.getMaxZoom(),
-    );
-    if (mapWindow == null || zoom == null) {
-      if (kDebugMode) {
-        print("карта не инициализирована");
-      }
-      return;
-    }
-    currentPosition = mapWindow!.map.cameraPosition.target;
-    zoom = (zoom! + (increase ? 1 : -1)).clamp(2.0, mapWindow!.map.cameraBounds.getMaxZoom());
-    if (kDebugMode) {
-      print("изменяем zoom: $zoom");
-    }
-    mapWindow!.map.move(
-      mapkit.CameraPosition(
-        currentPosition,
-        zoom: newZoom,
-        azimuth: 0.0,
-        tilt: 0.0,
-      ),
-    );
-    zoom = newZoom;
-    _clusterizePoints();
+    stations = await fetchMetroStations();
     notifyListeners();
   }
 
 }
-
-class ClusterListenerImpl implements mapkit.ClusterListener {
-  @override
-  void onClusterAdded(mapkit.Cluster cluster) async {
-    final iconBytes = await ClusterIconPainter(cluster.placemarks.length).getClusterIconBytes();
-    final clusterIcon = mapkitImage.ImageProvider.fromImageProvider(
-      MemoryImage(iconBytes),
-    );
-    cluster.appearance.setIcon(clusterIcon);
-  }
-
-}
-
-class ClusterTapListenerImpl implements mapkit.ClusterTapListener {
-  @override
-  bool onClusterTap(mapkit.Cluster cluster) {
-    print("Клик по кластеру с ${cluster.placemarks.length} объектами");
-    return true;
-  }
-}
-
-class MapObjectTapListenerImpl implements mapkit.MapObjectTapListener {
-
-  final void Function(PointPlaceMark)? onPlacemarkTap;
-  MapObjectTapListenerImpl({this.onPlacemarkTap});
-
-  @override
-  bool onMapObjectTap(mapkit.MapObject mapObject, mapkit.Point point) {
-      final data = mapObject.userData;
-      data as PointPlaceMark;
-      print("Тап по точке: ${data.description}");
-      onPlacemarkTap?.call(data);
-      return false;
-  }
-}
-
-

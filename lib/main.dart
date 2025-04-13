@@ -1,12 +1,8 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:yandex_maps_mapkit_lite/init.dart';
-import 'package:flutter/src/widgets/image.dart' as img;
-import 'SdekWindow.dart';
+import 'CDEKWindow.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await initMapkit(apiKey: '1803e53b-9ddc-4b80-835e-2e45189b8218');
   runApp(const MyApp());
 }
 
@@ -68,7 +64,7 @@ class _AnyScreenState extends State<AnyScreen> {
                     ),
                   ),
                   Expanded(
-                    child: SdekWindow(),
+                    child: CDEKWindow(),
                   ),
                 ],
               );
@@ -97,7 +93,7 @@ class _AnyScreenState extends State<AnyScreen> {
                       SizedBox(width: 10,),
                       Text('Выбрать пункт выдачи'),
                       SizedBox(width: 10,),
-                      img.Image.asset('assets/sdek.png',width: 60,),
+                      Image.asset('assets/sdek.png',width: 60,),
                     ],
                   ),
                   )

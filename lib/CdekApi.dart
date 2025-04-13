@@ -18,7 +18,7 @@ class CdekApi {
       },
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
-    //print(response.data);
+    print(response.data);
     int k=5;
     if (response.statusCode == 200) {
       print('Data loaded');
@@ -45,7 +45,7 @@ class DeliveryPoint {
   final List<String> images;
 
 
-  DeliveryPoint({
+  DeliveryPoint( {
     required this.code,
     required this.name,
     required this.address,
