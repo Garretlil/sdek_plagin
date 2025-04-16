@@ -4,6 +4,8 @@ import 'package:sdek_plagin/MetroStation.dart';
 import 'package:sdek_plagin/SdekWindowNotifier.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 
+import 'createOrderScreen.dart';
+
 class CDEKWindow extends StatefulWidget {
   const CDEKWindow({super.key});
 
@@ -57,6 +59,20 @@ class _CDEKWindowState extends State<CDEKWindow> {
     );
   }
   void temp(){}
+  PageRouteBuilder customPageRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionDuration: const Duration(milliseconds: 400),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        var begin = const Offset(1.0, 0.0);
+        var end = Offset.zero;
+        var curve = Curves.ease;
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var offsetAnimation = animation.drive(tween);
+        return SlideTransition(position: offsetAnimation, child: child);
+      },
+    );
+  }
   void _showBottomSheet(PointPlaceMark pointData, List<MetroStation>? stations) {
     final text=split(pointData.description);
     final targetStations= getMatchingStations(stations!,pointData.metro);
@@ -91,7 +107,7 @@ class _CDEKWindowState extends State<CDEKWindow> {
                       ),
                     ),
                   ),
-                  Text('Пункт СДЭК'),
+                  Text(pointData.type=='PVZ'? 'Пункт выдачи СДЭК' : 'Постамат СДЭК'),
                   Text(text[1],style: TextStyle(fontWeight: FontWeight.w800 ),),
                   SizedBox(height: 10,),
                   Padding(
@@ -112,19 +128,28 @@ class _CDEKWindowState extends State<CDEKWindow> {
                           ],
                         ),
                         SizedBox(height: 10,),
-                        Row(children:
-                        [
-                          Icon(Icons.access_time_outlined,color: Colors.green,),
-                          SizedBox(width: 10,),
-                          Text(pointData.workTime),
-                        ],
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.access_time_outlined, color: Colors.green),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                pointData.workTime,
+                                style: TextStyle(fontSize: 14),
+                              ),
+                            ),
+                          ],
                         ),
                       ]
                       )
                   ),
-                  SizedBox(height: 50,),
+                  SizedBox(height: 90,),
                   GestureDetector(
-                    onTap: ()=>temp(),
+                    onTap: ()=>
+                        Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => CreateOrderScreen(pointData: pointData)),
+                     ),
                     child: Container(
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(15)),

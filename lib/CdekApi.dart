@@ -1,7 +1,10 @@
 import 'CdekAuth.dart';
 import 'package:dio/dio.dart';
 
+import 'SdekWindowNotifier.dart';
+
 class CdekApi {
+
   final CdekAuth auth;
   final Dio _dio = Dio();
 
@@ -30,6 +33,46 @@ class CdekApi {
       throw Exception('Ошибка при загрузке пунктов выдачи');
     }
   }
+  Future<double?> calculateDeliveryCost(PointPlaceMark pointData) async {
+    final token = await auth.getToken();
+    final dio = Dio();
+    final requestBody = {
+      "currency": 1,
+      "lang": "ru",
+      "from_location": {"code": 44},
+      "to_location": {
+        "code": 44,
+        "delivery_point": pointData.code,
+      },
+      "packages": [
+        {
+          "height": 10,
+          "length": 20,
+          "weight": 10000,
+          "width": 15,
+        }
+      ],
+      "tariff_code": 136
+    };
+
+    try {
+      final response = await dio.post(
+        'https://api.cdek.ru/v2/calculator/tariff',
+        data: requestBody,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+      return response.data['delivery_sum']?.toDouble();
+    } on DioException catch (e) {
+      return null;
+    }
+  }
+
+
 
 }
 class DeliveryPoint {

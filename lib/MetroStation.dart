@@ -42,6 +42,9 @@ Future<List<MetroStation>> fetchMetroStations() async {
         stations.add(MetroStation.fromJson(station, lineName, hexColor));
       }
     }
+    // for (final station in stations){
+    //   print(station.name);
+    // }
     return stations;
   } else {
     throw Exception('Failed to load metro stations');
@@ -51,7 +54,7 @@ Future<List<MetroStation>> fetchMetroStations() async {
 List<MetroStation> getMatchingStations(List<MetroStation> stationsList, String targetStation){
   List<MetroStation> outputStations=[];
   for (var station in stationsList){
-    if (station.name==targetStation){
+    if (targetStation.contains(station.name)){
       outputStations.add(station);
     }
   }

@@ -15,6 +15,7 @@ class PointPlaceMark{
   final String type;
   final String metro;
   final String workTime;
+  final String code;
 
   PointPlaceMark({
     required this.latitude,
@@ -23,7 +24,8 @@ class PointPlaceMark{
     required this.adress,
     required this.type,
     required this.metro,
-    required this.workTime
+    required this.workTime,
+    required this.code
   });
 }
 class CDEKWindowNotifier extends ChangeNotifier {
@@ -63,7 +65,7 @@ class CDEKWindowNotifier extends ChangeNotifier {
           opacity: 1,
           icon: PlacemarkIcon.single(
             PlacemarkIconStyle(
-              image: BitmapDescriptor.fromAssetImage('assets/pvz.png'),
+              image: BitmapDescriptor.fromAssetImage(point.type=='PVZ'? 'assets/pvz.png' : 'assets/postamat.png'),
               scale: 1,
             ),
           ),
@@ -75,7 +77,8 @@ class CDEKWindowNotifier extends ChangeNotifier {
               adress: point.address,
               type: point.type,
               metro: point.nearestMetro ?? '',
-              workTime: point.workTime
+              workTime: point.workTime,
+              code: point.code
             );
             onPlacemarkTap?.call(pointData);
           },
